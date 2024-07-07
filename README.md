@@ -35,7 +35,7 @@ This is a fully functional social media API built with FastAPI. The API allows u
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/oseni99/InstaAPI.git
+   git clone https://github.com/oseni99/instaAPIs.git
    cd src
 
 ## API Documentation
