@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, validates
 
 from ..database import Base
-from ..post.models import Post, post_likes
+from ..post.models import post_likes
 from .enums import Gender
 
 

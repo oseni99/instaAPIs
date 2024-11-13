@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
 from ..auth.models import User
+from ..auth.schemas import User as UserSchema
 from .models import Hashtag, Post, post_hashtags
 from .schemas import Hashtag as HashtagSchema
 from .schemas import Post as PostSchema
@@ -17,24 +18,25 @@ from .schemas import PostCreate
 
 # create the post service
 async def create_post_svc(request: PostCreate, db: Session, user_id: int):
-    if user_id == User.id:
-        db_post = Post(
-            content=Post.content,
-            image=Post.image,
-            location=Post.location,
-            author_id=user_id,
-        )
-        db.add(db_post)
-        db.commit()
-        db.refresh(db_post)
-        return db_post
+
+    db_post = Post(
+        content=request.content,
+        image=request.image,
+        location=request.location,
+        author_id=user_id,
+    )
+    await create_hashtags_svc(db_post, db)
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    return db_post
 
 
 # from that post content find which one with hash and save it to the Post db
 # use regex to do that
 async def create_hashtags_svc(post: Post, db: Session):
-    pattern = r"\b#\w+\b"
-    matches = re.findall(pattern, post.content)
+    pattern = re.compile(r"#\w+")
+    matches = pattern.findall(post.content)
     for match in matches:
         # removes the first # of the hashtag itself
         tags = match[1:]
@@ -54,7 +56,7 @@ async def create_hashtags_svc(post: Post, db: Session):
 
 
 # get users posts i.e all the posts related to a particular user
-async def get_user_post_svc(user_id: int, db: Session) -> List[Post]:
+async def get_user_post_svc(user_id: int, db:AsyncSession) -> List[Post]:
     posts = (
         db.query(Post)
         .filter(Post.author_id == user_id)
@@ -118,7 +120,7 @@ async def get_random_posts_svc(
 # get post from post_id
 async def get_post_from_id_svc(db: AsyncSession, post_id: int) -> Post:
     posts = await db.execute(select(Post).where(Post.id == post_id))
-    return posts.scalars.first()
+    return posts.scalars().first()
 
 
 async def delete_post_svc(db: Session, post_id: int) -> Post:
@@ -157,7 +159,7 @@ async def unlike_post_svc(db: AsyncSession, post_id: int, username: str):
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     user = await db.execute(select(User).where(User.username == username))
-    user = user.scalars.first()
+    user = user.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     if user not in post.user_liked:
@@ -169,3 +171,15 @@ async def unlike_post_svc(db: AsyncSession, post_id: int, username: str):
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to like post {e}")
+
+    # users who liked the post
+
+
+async def liked_users_post_svc(db: AsyncSession, post_id: int) -> list[UserSchema]:
+    # get the post first
+    post = await get_post_from_id_svc(db, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    users_liked = post.user_liked
+    # have to turn the user_liked posts to a pydantic schema
+    return [UserSchema.model_validate(user) for user in users_liked]

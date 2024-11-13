@@ -34,8 +34,6 @@ async def existing_user(db: Session, username: str):
 
 
 # get a user based on the username
-
-
 async def get_user(db: Session, username: str):
     user = db.query(User).filter(User.username == username).first()
     return user
@@ -78,7 +76,7 @@ async def get_current_user_from_user_id(db: Session, id: int):
     return db.query(User).filter(User.id == id).first()
 
 
-async def create_user(request: schemas.UserCreate, db: Session):
+async def create_user(request: schemas.UserBase, db: Session):
     new_user = User(
         email=request.email,
         username=request.username,
@@ -89,6 +87,7 @@ async def create_user(request: schemas.UserCreate, db: Session):
         profile_pic=request.profile_pic,
         bio=request.bio,
         dob=request.dob,
+        created_date=datetime.now(),  # set this internally and not on the user request
     )
     db.add(new_user)
     db.commit()
@@ -106,12 +105,11 @@ async def authenticate_user(db: Session, username: str, password: str):
 
 
 async def update_user_svc(db: Session, username: str, request: schemas.UserUpdate):
-    db_user = db.query(User).filter(User.username == username).first()
+    db_user = await get_user(db, username)
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
-
     update_data = request.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         if value is not None:

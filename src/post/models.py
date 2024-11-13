@@ -12,19 +12,18 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from ..auth.models import User
 from ..database import Base
 
 # Association Table for a many to many relationship with SQLalchemy
 post_hashtags = Table(
-    "post_hashtags",
+    "post_hashtags", # name
     Base.metadata,
     Column("post_id", Integer, ForeignKey("posts.id")),
     Column("hashtags_id", Integer, ForeignKey("hashtags.id")),
 )
 
 post_likes = Table(
-    "post_likes",
+    "post_likes", # table name
     Base.metadata,
     Column("user_id", Integer, ForeignKey("users.id")),
     Column("post_id", Integer, ForeignKey("posts.id")),

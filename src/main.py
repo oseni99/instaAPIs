@@ -6,7 +6,8 @@ from .api import router
 app = FastAPI(
   title="Social Media App",
   description="Engine behind a social media",
-  version="0.1"
+  version="0.1.0",
+  docs_url="/docs",
   )
 
 Base.metadata.create_all(bind=engine)
