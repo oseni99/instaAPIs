@@ -54,14 +54,17 @@ async def get_current_posts_from_user(token: str, db: Session = Depends(get_db))
 
 
 # get posts of any users N.B!! with their username
-@router.get("/user/{username}", response_model=ShowPost, status_code=status.HTTP_200_OK)
+@router.get(
+    "/user/{username}", response_model=List[ShowPost], status_code=status.HTTP_200_OK
+)
 async def get_user_post(username: str, db: Session = Depends(get_db)):
     user = await existing_user(db, username=username)
+    # user id
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist"
         )
-    posts = get_post_from_id_svc(db, user.id)
+    posts = await get_post_from_id_svc(db, user.id)
     return posts
 
 

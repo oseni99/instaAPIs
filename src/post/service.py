@@ -130,9 +130,26 @@ async def get_random_posts_svc(
 
 
 # get post from post_id
-async def get_post_from_id_svc(db: AsyncSession, post_id: int) -> Post:
-    posts = await db.execute(select(Post).where(Post.id == post_id))
-    return posts.scalars().first()
+async def get_post_from_id_svc(db: Session, user_id: int) -> Post:
+    posts = (
+        db.query(Post)
+        .filter(Post.author_id == user_id)
+        .order_by(desc(Post.created_dt))
+        .all()
+    )
+    return [
+        ShowPost(
+            content=post.content,
+            image=post.image,
+            location=post.location,
+            created_dt=post.created_dt,
+            likes_count=post.likes_count,
+            author=post.author.username,  # Transform the User object to a string (username)
+            hashtags=post.hashtags,
+            user_liked=post.user_liked,
+        )
+        for post in posts
+    ]
 
 
 async def delete_post_svc(db: Session, post_id: int) -> Post:
