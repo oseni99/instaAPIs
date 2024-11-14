@@ -18,6 +18,8 @@ from ..post.models import post_likes
 from .enums import Gender
 
 
+# At the parent of the many to one
+# no foreign key but specify the relationship
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)

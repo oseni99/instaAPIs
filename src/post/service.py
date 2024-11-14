@@ -13,7 +13,7 @@ from ..auth.schemas import User as UserSchema
 from .models import Hashtag, Post, post_hashtags
 from .schemas import Hashtag as HashtagSchema
 from .schemas import Post as PostSchema
-from .schemas import PostCreate
+from .schemas import PostCreate, ShowPost
 
 
 # create the post service
@@ -56,14 +56,26 @@ async def create_hashtags_svc(post: Post, db: Session):
 
 
 # get users posts i.e all the posts related to a particular user
-async def get_user_post_svc(user_id: int, db:AsyncSession) -> List[Post]:
+async def get_user_post_svc(user_id: int, db: Session):
     posts = (
         db.query(Post)
         .filter(Post.author_id == user_id)
         .order_by(desc(Post.created_dt))
         .all()
     )
-    return posts
+    return [
+        ShowPost(
+            content=post.content,
+            image=post.image,
+            location=post.location,
+            created_dt=post.created_dt,
+            likes_count=post.likes_count,
+            author=post.author.username,  # Transform the User object to a string (username)
+            hashtags=post.hashtags,
+            user_liked=post.user_liked,
+        )
+        for post in posts
+    ]
 
 
 # get posts from hashtags

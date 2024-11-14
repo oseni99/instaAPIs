@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from ..database import get_db
+from typing import List
 
 
 from .schemas import PostCreate, Post as PostSchema, ShowPost
@@ -41,7 +42,7 @@ async def create_post(request: PostCreate, token: str, db: Session = Depends(get
 
 
 # get posts of current user
-@router.get("/", response_model=ShowPost, status_code=status.HTTP_200_OK)
+@router.get("/", response_model=List[ShowPost], status_code=status.HTTP_200_OK)
 async def get_current_posts_from_user(token: str, db: Session = Depends(get_db)):
     user = await get_current_user(db, token)
     if not user.id:

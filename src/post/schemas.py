@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 
 class PostCreate(BaseModel):
@@ -37,8 +37,8 @@ class ShowPost(BaseModel):
     created_dt: datetime
     likes_count: int
     author: str
-    hashtags: str
-    user_liked: str
+    hashtags: Optional[List[str]] = []  # Assuming hashtags are a list
+    user_liked: Optional[List[str]] = []
 
     class Config:
         from_attributes = True

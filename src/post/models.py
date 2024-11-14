@@ -16,14 +16,14 @@ from ..database import Base
 
 # Association Table for a many to many relationship with SQLalchemy
 post_hashtags = Table(
-    "post_hashtags", # name
+    "post_hashtags",
     Base.metadata,
     Column("post_id", Integer, ForeignKey("posts.id")),
     Column("hashtags_id", Integer, ForeignKey("hashtags.id")),
 )
 
 post_likes = Table(
-    "post_likes", # table name
+    "post_likes",
     Base.metadata,
     Column("user_id", Integer, ForeignKey("users.id")),
     Column("post_id", Integer, ForeignKey("posts.id")),
@@ -54,3 +54,12 @@ class Hashtag(Base):
     name = Column(String, index=True)
 
     posts = relationship("Post", secondary=post_hashtags, back_populates="hashtags")
+
+
+# Since its a small app might not necessarily need a new DB
+# unless to scale later on
+# class Liked_Post(Base):
+#     __tablename__ = "liked_post"
+
+#     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+#     post_id = Column(Integer, ForeignKey("posts.id"), primary_key=True)
